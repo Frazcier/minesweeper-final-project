@@ -273,7 +273,7 @@ def display_difficulty_menu(terminalWidth):
 
 def display_main_menu(terminalWidth):
     menuHeader = "🎮 MAIN MENU 🎮"
-    print(f"\n{Fore.BLUE + Style.BRIGHT}{menuHeader.center(terminalWidth)}\n")
+    print(f"\n{Fore.BLUE + Style.BRIGHT}{menuHeader.center(terminalWidth)}")
 
     menuItems = [
         "[1] Play Game",
@@ -633,36 +633,48 @@ def main_menu():
         choice = display_main_menu(terminalWidth)
         
         if choice == "1":
-            os.system('cls' if os.name == 'nt' else 'clear')
-            display_welcome_text(terminalWidth)
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                display_welcome_text(terminalWidth)
+                    
+                difficulty = display_difficulty_menu(terminalWidth)
+                    
+                levels = {
+                    "1": (9, 9, 9),
+                    "2": (9, 9, 16),
+                    "3": (9, 15, 32),
+                    "4": (15, 15, 54),
+                    "5": None
+                }
+
+                if difficulty == "5":
+                    break
+
+                if difficulty not in levels:
+                    print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+                    time.sleep(0.5)
+                    continue
                 
-            difficulty = display_difficulty_menu(terminalWidth)
-                
-            levels = {
-                "1": (9, 9, 9),
-                "2": (9, 9, 16),
-                "3": (9, 15, 32),
-                "4": (15, 15, 54),
-                "5": None
-            }
+                while choice != "N":
+                    rows, cols, bombs = levels[difficulty]
+                    game = Minesweeper(rows, cols, bombs)
+                    game.debugMode = debugMode
+                    
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    game.start_game()
 
-            if difficulty == "5":
-                continue
+                    while True:
+                        choice = input(f"\n{Fore.YELLOW}Do you want to restart? {Style.BRIGHT}(Y/N) ").upper().strip()
 
-            if difficulty not in levels:
-                print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
-                time.sleep(0.5)
-                continue
+                        if choice == "Y":
+                            break
 
-            rows, cols, bombs = levels[difficulty]
-            game = Minesweeper(rows, cols, bombs)
-            game.debugMode = debugMode
-            
-            os.system('cls' if os.name == 'nt' else 'clear')
-            game.start_game()
+                        elif choice == "N":
+                            break
 
-            text = "Press Any Key to return to main menu..."
-            input(f"\n{Fore.YELLOW}{text.center(terminalWidth)}")
+                        else:
+                            print(f"{Fore.RED + Style.BRIGHT}INVALID {Style.NORMAL}Choice!")
+
                 
         elif choice == "2":
             while True:
