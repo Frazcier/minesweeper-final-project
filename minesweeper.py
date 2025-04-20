@@ -459,20 +459,22 @@ class Minesweeper:
                 continue
 
             if result == "EXIT":
+                time.sleep(0.5)
                 display_gave_up(self.terminalWidth)
                 break
 
             if result in ["WIN", "LOSE"]:
                 self.print_board(reveal=True)
 
+                time.sleep(0.5)
                 display_stats(elapsedTime, moves, self.terminalWidth)
 
                 if result == "WIN":
                     if self.bestTime is None or elapsedTime < self.bestTime:
                         self.bestTime = elapsedTime
-                        text = f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}🎊 NEW BEST TIME! 🎊"
+                        text = "🎊 NEW BEST TIME! 🎊"
                         padding = " " * calculate_padding(self.terminalWidth, len(text))
-                        print(f"\n{padding}{text}\n")
+                        print(f"\n{padding}{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{text}\n")
 
                     display_win(self.terminalWidth)
 
@@ -656,7 +658,7 @@ def main_menu():
                     break
                     
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} choice")
+                    print(f"\n{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} choice")
                     time.sleep(0.5)
                 
         elif choice == "3":
@@ -664,7 +666,7 @@ def main_menu():
             break
             
         else:
-            print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL}x choice")
+            print(f"\n{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} choice")
             time.sleep(0.5)
 
     
