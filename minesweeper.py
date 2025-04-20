@@ -7,6 +7,7 @@
 # (+) Significantly Improved Overall UI
 # (+) Added Main Menu and Settings Menu
 # (+) Added Method to toggle Debug Mode
+# (+) Adjusting UI elements
 # (+) Fixing minor issues
 # (+) Tweaking the code
 # Lines of code:675
