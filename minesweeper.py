@@ -317,11 +317,14 @@ class Minesweeper:
         self.generate_boards()
 
 
-    def generate_boards(self, safe_coords=None):
+    # Generate the game boards and makes sure that the first move is safe
+    def generate_boards(self, safeCoords=None):
+        # Initializes 3 array lists
         self.board = []
         self.cloneBoard = []
         coordinates = []
 
+        # Adding elements to the 2 lists (board and cloneBoard)
         for x in range(self.rows):
             row = []
             cloneRow = []
@@ -334,9 +337,10 @@ class Minesweeper:
             self.board.append(row)
             self.cloneBoard.append(cloneRow)
 
-        if safe_coords is not None:
-            safeCoordX = safe_coords[0]
-            safeCoordY = safe_coords[1]
+        # If safe coordinates are provided, it ensures that the surrounding cells do not contain any bombs
+        if safeCoords is not None:
+            safeCoordX = safeCoords[0]
+            safeCoordY = safeCoords[1]
 
             safeCoordinates = []
 
@@ -348,6 +352,7 @@ class Minesweeper:
                     if 0 <= coordX < self.rows and 0 <= coordY < self.cols:
                         safeCoordinates.append((coordX, coordY))
 
+            # Filters out safe coordinates from possible bomb positions
             filteredCoordinates = []
             for coord in coordinates:
                 if coord not in safeCoordinates:
@@ -355,6 +360,7 @@ class Minesweeper:
 
             coordinates = filteredCoordinates
 
+            # Randomly place bombs
             bombPlacement = random.sample(coordinates, self.bombsCount)
 
             for x, y in bombPlacement:
@@ -363,6 +369,7 @@ class Minesweeper:
         self.adjust_board()
 
 
+    # Calculates the number of bombs surrounding the cell
     def adjust_board(self):
         for x in range(self.rows):
             for y in range(self.cols):
@@ -383,10 +390,12 @@ class Minesweeper:
                 self.board[x][y] = bombs
 
 
+    # Get guide letters for board coordinates
     def get_guide(self, length):
         return list("ABCDEFGHIJKLMNO"[:length])
     
 
+    # Colors a cell element corresponding to its nature
     def color_cell(self, value):
         colorMap = [Fore.BLUE, Fore.GREEN, Fore.RED, Fore.BLACK, Fore.YELLOW, Fore.MAGENTA, Fore.CYAN]
 
@@ -406,6 +415,7 @@ class Minesweeper:
             return colorMap[value - 1] + Style.BRIGHT + str(value) + Style.RESET_ALL
 
 
+    # Prints the board
     def print_board(self, reveal=False):
         guideRow = self.get_guide(self.rows)
         guideCols = self.get_guide(self.cols)
@@ -438,9 +448,12 @@ class Minesweeper:
         print(f"{Fore.CYAN}Legend: {Fore.RESET}. = Hidden, {Fore.YELLOW}F{Fore.RESET} = Flag, {Fore.RED}*{Fore.RESET} = Bomb, {Fore.MAGENTA}[1–8]{Fore.RESET} = Nearby Bombs\n")
 
 
+    # Prints a guide
     def print_help(self):
         display_help(self.terminalWidth)
 
+
+    # Starts the game
     def start_game(self):
         startTime = time.time()
         moves = 0
@@ -484,6 +497,7 @@ class Minesweeper:
                 break
    
 
+    # Handles player moves
     def player_move(self):
         move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split()
         print()
@@ -514,6 +528,7 @@ class Minesweeper:
         return "CONTINUE"
         
 
+    # Handles flagging and unflagging
     def handle_flags(self, action, x, y):
         if x not in self.get_guide(self.rows) or y not in self.get_guide(self.cols):
             print(f"{Fore.RED}{Style.BRIGHT}INVALID{Style.NORMAL} Coordinates!\n")
@@ -544,6 +559,7 @@ class Minesweeper:
         return "CONTINUE"
     
 
+    # Reveals a cell
     def reveal_cell(self, x, y):
         if x not in self.get_guide(self.rows) or y not in self.get_guide(self.cols):
             print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} Coordinates!\n")
@@ -556,27 +572,32 @@ class Minesweeper:
             print(f"{Fore.RED}Cell is {Style.BRIGHT}FLAGGED!\n")
             return "CONTINUE"
         
+        # Ensures that the first move is always safe
         if not self.first_move_done:
-            self.generate_boards(safe_coords=[coordX, coordY])
+            self.generate_boards(safeCoords=(coordX, coordY))
             self.first_move_done = True
         
+        # Check if bomb
         if self.board[coordX][coordY] == "*":
             self.cloneBoard[coordX][coordY] = "*"
             return "LOSE"
         
+        # Check if already revealed
         if self.cloneBoard[coordX][coordY] != ".":
             print(f"{Fore.RED}Cell is {Style.BRIGHT}ALREADY REVEALED!\n")
             return "CONTINUE"
 
-
+        # Reveals the cell and its neighboring cells
         self.reveal_neighbors(coordX, coordY)
         
+        # Checks if player won
         if self.check_win():
             return "WIN"
         
         return "CONTINUE"
         
 
+    # Reveal neighboring cells using recursion
     def reveal_neighbors(self, coordX , coordY):
         if not (0 <= coordX < self.rows and 0 <= coordY < self.cols):
             return None
@@ -586,6 +607,7 @@ class Minesweeper:
         
         self.cloneBoard[coordX][coordY] = self.board[coordX][coordY]
 
+        # Implements flood fill using recursion
         if self.board[coordX][coordY] == 0:
             for x in [-1, 0, 1]:
                 for y in [-1, 0, 1]:
@@ -593,6 +615,7 @@ class Minesweeper:
                         self.reveal_neighbors((coordX + x), (coordY + y))
 
 
+    # Checks if the player won
     def check_win(self):
         for x in range(self.rows):
             for y in range(self.cols):
