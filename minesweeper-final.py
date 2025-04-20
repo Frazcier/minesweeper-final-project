@@ -3,10 +3,23 @@
 # Banganan, Grach B.
 # 
 # Date Created: April 09, 2025
-# Current Version: 1.3.04.14.25
-# (+) Added New Game Difficulty
-# (+) Added Command to Give Up
+# Current Version: 2.0.04.20.25
+# (+) Significantly Improved Overall UI
+# (+) Added Main Menu and Settings Menu
+# (+) Added Method to toggle Debug Mode
+# Lines of code:600+
 # 
+# Current Version: 1.4.04.19.25
+# (+) Slightly Improved Overall UI
+# (+) Added Method to Always be safe in first move
+# (+) Organized the Structure of the Code
+# (+) Added New Command
+# Lines of code: 500+
+# 
+# Old Version: 1.3.04.14.25
+# (+) Added New Game Difficulty
+# (+) Added New Command to Give Up
+# Lines of code: 450+
 # 
 # Old Version: 1.2.04.13.25
 # Features:
@@ -40,425 +53,620 @@
 # (+) Adjusts Board after Generating
 # (?) Special Cases in Move Validation not fixed
 # Lines of code: 100+
-# 
-# 
-# WIP:
-# Menu Design
-# Points
 
 import random
 import time
-from colorama import Fore, Back, Style, init
+import os
+from colorama import Fore, Style, init
 
-init(autoreset = True)
+init(autoreset=True)
 
-mainMenu = """
-{0}Welcome to minesweeper{1}
-{0}[1] Play{1}
-{0}[2] Exit{1}
-""".format(Fore.CYAN, Style.RESET_ALL)
-
-modeMenu = """
-{0}Select Game Mode{1}
-{0}[1] Easy{1}
-{0}[2] Medium{1}
-{0}[3] Hard{1}
-{0}[4] Very Hard{1}
-""".format(Fore.CYAN, Style.RESET_ALL)
-
-board = []
-
-cloneBoard = []
-
-guide = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"]
-
-flagCount = 0
-totalFlags = 0
-
-gameOver = False
-
-bestTime = None
-
-debugMode = True
-
-def main_loop():
-    while True:
-        print(modeMenu)
-
-        try:
-            choice = int(input("Choice: "))
-
-        except ValueError:
-            print("Please enter only integer!")
-            continue
-        
-        select_gamemode(choice)
-        
-        while True:
-            playAgain = input("Do you want to play again? (Y/N): ").lower().strip()
-
-            if playAgain == "y":
-                board.clear()
-                cloneBoard.clear()
-                break
-
-            elif playAgain == "n":
-                print("\nThank You for Playing!")
-                return None
-
-            else:
-                print("Invalid Choice! (Y/N)")
-
-
-def update_best_time(elapsedTime):
-    global bestTime
-
-    if bestTime is None or elapsedTime < bestTime:
-        bestTime = elapsedTime
-        print("New Best Time!")
-
-    bestMinutes = int(bestTime // 60)
-    bestSeconds = int(bestTime % 60)
-
-    print(f"Best Time {bestMinutes}m {bestSeconds}s\n")
-
-
-def start_game(rows, cols):
-    startTime = time.time()
-    moveCount = 0
-
-    while True:
-        result = player_move(rows, cols)
-
-        if result in ["CONTINUE", "WIN"]:
-            moveCount += 1
-
-        if result in ["WIN", "LOSE"]:
-            endTime = time.time()
-
-            elapsedTime = endTime - startTime
-            minutes = int(elapsedTime // 60)
-            seconds = int(elapsedTime % 60)
-
-            print(f"\nMoves Made: {moveCount}")
-            print(f"\nTime Elapsed: {minutes}m {seconds}s\n")    
-
-            if result == "WIN":
-                update_best_time(elapsedTime)
-            break
-
-
-def check_win(rows, cols):
-    for x in range(rows):
-        for y in range(cols):
-            if board[x][y] != "*" and cloneBoard[x][y] == ".":
-                return False
-        
-    return True
-
-
-def color_cell(value):
-    if value == "*":
-        return Fore.RED + "*" + Style.RESET_ALL
+def display_welcome_text(terminalWidth):
+    welcomeText = [
+        f"{Fore.MAGENTA + Style.BRIGHT}▄▄▌ ▐ ▄▌▄▄▄ .▄▄▌   ▄▄·       • ▌ ▄ ·. ▄▄▄ .    ▄▄▄▄▄          • ▌ ▄ ·. ▪   ▐ ▄ ▄▄▄ ..▄▄ · ▄▄▌ ▐ ▄▌▄▄▄ .▄▄▄ . ▄▄▄·▄▄▄ .▄▄▄  ",
+        f"{Fore.MAGENTA + Style.BRIGHT}██· █▌▐█▀▄.▀·██•  ▐█ ▌▪▪     ·██ ▐███▪▀▄.▀·    •██  ▪         ·██ ▐███▪██ •█▌▐█▀▄.▀·▐█ ▀. ██· █▌▐█▀▄.▀·▀▄.▀·▐█ ▄█▀▄.▀·▀▄ █·",
+        f"{Fore.MAGENTA + Style.BRIGHT}██▪▐█▐▐▌▐▀▀▪▄██▪  ██ ▄▄ ▄█▀▄ ▐█ ▌▐▌▐█·▐▀▀▪▄     ▐█.▪ ▄█▀▄     ▐█ ▌▐▌▐█·▐█·▐█▐▐▌▐▀▀▪▄▄▀▀▀█▄██▪▐█▐▐▌▐▀▀▪▄▐▀▀▪▄ ██▀·▐▀▀▪▄▐▀▀▄ ",
+        f"{Fore.MAGENTA + Style.BRIGHT}▐█▌██▐█▌▐█▄▄▌▐█▌▐▌▐███▌▐█▌.▐▌██ ██▌▐█▌▐█▄▄▌     ▐█▌·▐█▌.▐▌    ██ ██▌▐█▌▐█▌██▐█▌▐█▄▄▌▐█▄▪▐█▐█▌██▐█▌▐█▄▄▌▐█▄▄▌▐█▪·•▐█▄▄▌▐█•█▌",
+        f"{Fore.MAGENTA + Style.BRIGHT} ▀▀▀▀ ▀▪ ▀▀▀ .▀▀▀ ·▀▀▀  ▀█▄▀▪▀▀  █▪▀▀▀ ▀▀▀      ▀▀▀  ▀█▄▀▪    ▀▀  █▪▀▀▀▀▀▀▀▀ █▪ ▀▀▀  ▀▀▀▀  ▀▀▀▀ ▀▪ ▀▀▀  ▀▀▀ .▀    ▀▀▀ .▀  ▀"
+        ]
     
-    elif value == "F":
-        return Fore.YELLOW + "F" + Style.RESET_ALL
+    for line in welcomeText:
+        print(line.center(terminalWidth))
+        time.sleep(0.1)
+
+    print()
+
+    time.sleep(0.5)
+
+
+def display_win(terminalWidth):
+    victoryText = [
+        f"{Fore.GREEN + Style.BRIGHT}██╗   ██╗ ██████╗ ██╗   ██╗    ██╗    ██╗██╗███╗   ██╗",
+        f"{Fore.GREEN + Style.BRIGHT}╚██╗ ██╔╝██╔═══██╗██║   ██║    ██║    ██║██║████╗  ██║",
+        f"{Fore.GREEN + Style.BRIGHT} ╚████╔╝ ██║   ██║██║   ██║    ██║ █╗ ██║██║██╔██╗ ██║",
+        f"{Fore.GREEN + Style.BRIGHT}  ╚██╔╝  ██║   ██║██║   ██║    ██║███╗██║██║██║╚██╗██║",
+        f"{Fore.GREEN + Style.BRIGHT}   ██║   ╚██████╔╝╚██████╔╝    ╚███╔███╔╝██║██║ ╚████║",
+        f"{Fore.GREEN + Style.BRIGHT}   ╚═╝    ╚═════╝  ╚═════╝      ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝"
+    ]
+
+    for line in victoryText:
+        print(line.center(terminalWidth))
+        time.sleep(0.1)
+
+    print()
+
+
+def display_lose(terminalWidth):
+    loseText = [
+        f"{Fore.RED + Style.BRIGHT}██╗   ██╗ ██████╗ ██╗   ██╗    ██╗      ██████╗ ███████╗███████╗",
+        f"{Fore.RED + Style.BRIGHT}╚██╗ ██╔╝██╔═══██╗██║   ██║    ██║     ██╔═══██╗██╔════╝██╔════╝",
+        f"{Fore.RED + Style.BRIGHT} ╚████╔╝ ██║   ██║██║   ██║    ██║     ██║   ██║███████╗█████╗  ",
+        f"{Fore.RED + Style.BRIGHT}  ╚██╔╝  ██║   ██║██║   ██║    ██║     ██║   ██║╚════██║██╔══╝  ",
+        f"{Fore.RED + Style.BRIGHT}   ██║   ╚██████╔╝╚██████╔╝    ███████╗╚██████╔╝███████║███████╗",
+        f"{Fore.RED + Style.BRIGHT}   ╚═╝    ╚═════╝  ╚═════╝     ╚══════╝ ╚═════╝ ╚══════╝╚══════╝"
+    ] 
+
+    for line in loseText:
+        print(line.center(terminalWidth))
+        time.sleep(0.1)
+
+    print()
+
+
+def display_gave_up(terminalWidth):
+    gaveUpText = [
+        f"{Fore.YELLOW + Style.BRIGHT}██╗   ██╗ ██████╗ ██╗   ██╗     ██████╗  █████╗ ██╗   ██╗███████╗    ██╗   ██╗██████╗ ",
+        f"{Fore.YELLOW + Style.BRIGHT}╚██╗ ██╔╝██╔═══██╗██║   ██║    ██╔════╝ ██╔══██╗██║   ██║██╔════╝    ██║   ██║██╔══██╗",
+        f"{Fore.YELLOW + Style.BRIGHT} ╚████╔╝ ██║   ██║██║   ██║    ██║  ███╗███████║██║   ██║█████╗      ██║   ██║██████╔╝",
+        f"{Fore.YELLOW + Style.BRIGHT}  ╚██╔╝  ██║   ██║██║   ██║    ██║   ██║██╔══██║╚██╗ ██╔╝██╔══╝      ██║   ██║██╔═══╝ ",
+        f"{Fore.YELLOW + Style.BRIGHT}   ██║   ╚██████╔╝╚██████╔╝    ╚██████╔╝██║  ██║ ╚████╔╝ ███████╗    ╚██████╔╝██║     ",
+        f"{Fore.YELLOW + Style.BRIGHT}   ╚═╝    ╚═════╝  ╚═════╝      ╚═════╝ ╚═╝  ╚═╝  ╚═══╝  ╚══════╝     ╚═════╝ ╚═╝     "
+    ] 
+
+    for line in gaveUpText:
+        print(line.center(terminalWidth))
+        time.sleep(0.1)
+
+    print()
+
+
+def display_exit(terminalWidth):
+    exitText = [
+        f"{Fore.MAGENTA + Style.BRIGHT} ██████╗  ██████╗  ██████╗ ██████╗ ██████╗ ██╗   ██╗███████╗██╗",
+        f"{Fore.MAGENTA + Style.BRIGHT}██╔════╝ ██╔═══██╗██╔═══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝██╔════╝██║",
+        f"{Fore.MAGENTA + Style.BRIGHT}██║  ███╗██║   ██║██║   ██║██║  ██║██████╔╝ ╚████╔╝ █████╗  ██║",
+        f"{Fore.MAGENTA + Style.BRIGHT}██║   ██║██║   ██║██║   ██║██║  ██║██╔══██╗  ╚██╔╝  ██╔══╝  ╚═╝",
+        f"{Fore.MAGENTA + Style.BRIGHT}╚██████╔╝╚██████╔╝╚██████╔╝██████╔╝██████╔╝   ██║   ███████╗██╗",
+        f"{Fore.MAGENTA + Style.BRIGHT} ╚═════╝  ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚═╝"
+    ]
+
+    print()
+
+    for line in exitText:
+        print(line.center(terminalWidth))
+        time.sleep(0.1)
+
+
+def get_terminal_width():
+    try:
+        return os.get_terminal_size().columns
     
-    elif value == ".":
-        return Fore.WHITE + "." + Style.RESET_ALL
+    except:
+        return 80
     
-    elif value == 0:
-        return " "
     
+def calculate_padding(x, y):
+    return (x - y) // 2
+
+
+def display_stats(elapsedTime, totalMoves, terminalWidth):
+    statsHeader = f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}📈 YOUR TOTAL STATISTICS 📈"
+    print(f"\n{statsHeader.center(terminalWidth)}\n")
+
+    statsItems = [
+        f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}Total Time: {elapsedTime // 60}m {elapsedTime % 60}s",
+        f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}Total Moves: {totalMoves}\n"
+    ]
+
+    maxLength = 0
+
+    for length in statsItems: 
+        if len(length) > maxLength:
+            maxLength = len(length)
+
+
+    paddingStr = " " * calculate_padding(terminalWidth, maxLength)
+
+    for item in statsItems:
+        print(f"{paddingStr}{item}")
+        time.sleep(0.1)
+    
+
+def display_help(terminalWidth):
+    menuHeader = f"{Fore.CYAN + Style.BRIGHT}📜 COMMANDS 📜"
+    print(f"\n{menuHeader.center(terminalWidth)}\n")
+
+    menuItems = [
+        f"{Fore.CYAN}A A         - Reveal Cell",
+        f"{Fore.CYAN}F A A       - Flag Cell",
+        f"{Fore.CYAN}U A A       - Unflag Cell",
+        f"{Fore.CYAN}SHOW        - Show Full Board (Debug Mode)",
+        f"{Fore.CYAN}EXIT        - Give Up",
+        f"{Fore.CYAN}HELP        - Show Commands\n",
+    ]
+    
+    maxLength = 0
+
+    for length in menuItems:
+        if len(length) > maxLength:
+            maxLength = len(length)
+
+
+    paddingStr = " " * calculate_padding(terminalWidth, maxLength)
+
+    for item in menuItems:
+        print(f"{paddingStr}{item}")
+        time.sleep(0.1)
+
+
+def display_settings_menu(terminalWidth, debugMode):
+    menuHeader = f"{Fore.GREEN + Style.BRIGHT}⚙️ SETTINGS MENU ⚙️"
+    print(f"\n{menuHeader.center(terminalWidth)}\n")
+
+    if debugMode:
+        debugStatus = "ON"
+
     else:
-        return Fore.CYAN + str(value) + Style.RESET_ALL
+        debugStatus = "OFF"
 
+    menuItems = [
+        f"{Fore.CYAN}[1] Debug Mode: {Fore.YELLOW + Style.BRIGHT}{debugStatus}{Style.RESET_ALL}",
+        f"{Fore.CYAN}[2] Return to Main Menu\n"
+    ]
 
-def debug_view_board(rows, cols):
-    guideRow = list(guide[:rows])
-    guideCols = list(guide[:cols])
+    maxLength = 0
 
-    print("     " + "   ".join(guideCols))
-    print("   +" + "---+" * cols)
+    for item in menuItems:
+        if len(item) > maxLength:
+            maxLength = len(item)
 
-    for x in range(rows):
-        rowString = f"{guideRow[x]}  |"
+    paddingStr = " " * calculate_padding(terminalWidth, maxLength)
 
-        for y in range(cols):
-            cell = board[x][y]
-            cellDisplay = color_cell(cell)
-            rowString += f" {cellDisplay} |"
+    for item in menuItems:
+        print(f"{paddingStr}{item}")
+        time.sleep(0.1)
 
-        print(rowString)
-        print("   +" + "---+" * cols)
-
-    print(f"\n{Fore.YELLOW}Flags Remaining: {flagCount}/{totalFlags}{Style.RESET_ALL}\n")
-
-
-def player_move(rows, cols):
-    global flagCount, totalFlags
-    while True:
-        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split()
-
-        if debugMode and len(move) == 1 and move[0] == "SHOW":
-            print("\nDebug View (Full Board):\n")
-            debug_view_board(rows, cols)
-            continue
-        
-        if len(move) == 1 and move[0] == "EXIT":
-            print("You gave up! Try Again Next Time!")
-            return "LOSE"
-
-        if len(move) not in [2, 3]:
-            print("Invalid Coordinates! Please follow the format! A A to reveal, F A A to flag, U A A to unflag!")
-            continue
-
-        if len(move) == 3:
-            coordinates = list(move)
-
-            if coordinates[1] not in guide[:rows] or coordinates[2] not in guide[:cols]:
-                print("Invalid Coordinates!")
-                continue  
-
-            coordX = guide.index(coordinates[1]) 
-            coordY = guide.index(coordinates[2])
-
-            if coordinates[0] == "F":
-                if cloneBoard[coordX][coordY] == ".":
-                    if flagCount > 0:
-                        cloneBoard[coordX][coordY] = "F"
-                        flagCount -= 1
-
-                    else:
-                        print("No Flags Remaining!")
-
-                elif cloneBoard[coordX][coordY] == "F":
-                    print("Cell Already Flagged!")
-
-                else:
-                    print("Cannot Flag this cell!")
-
-            elif coordinates[0] == "U":
-                if cloneBoard[coordX][coordY] == "F":
-                    cloneBoard[coordX][coordY] = "."
-                    flagCount += 1
-
-                else:
-                    print("Cell is not Flagged!")
-
-            else:
-                print("Invalid Coordinates! Use F or U!")
-
-            print_board(rows, cols)
-            return "CONTINUE"
-
-        else:
-            coordinates = list(move)
-
-            if coordinates[0] not in guide[:rows] or coordinates[1] not in guide[:cols]:
-                print("Invalid Coordinates!")
-                continue  
-
-            coordX = guide.index(coordinates[0]) 
-            coordY = guide.index(coordinates[1])
-
-            if cloneBoard[coordX][coordY] == "F":
-                print("Cell is flagged")
-                continue
-
-            if cloneBoard[coordX][coordY] != ".":
-                print("Cell is already revealed!")
-                continue
-
-            if board[coordX][coordY] == "*":
-                for x in range(rows):
-                    for y in range(cols):
-                        if board[x][y] == "*":
-                            cloneBoard[x][y] = "*"
-
-                print_board(rows, cols)
-                print("You hit a mine! You lose!")
-                return "LOSE"
-
-            else:
-                reveal_cell(coordX, coordY, rows, cols)
-
-                if check_win(rows, cols):
-                    for x in range(rows):
-                        for y in range(cols):
-                            if board[x][y] == "*":
-                                cloneBoard[x][y] = "*"
-
-                    print_board(rows, cols)
-                    print("Congratulations! You've Won the Game!")
-                    return "WIN"
-                
-        print_board(rows, cols)
-        return "CONTINUE"
-
-
-def reveal_cell(coordX, coordY, rows, cols):
-    if coordX < 0 or coordX >= rows or coordY < 0 or coordY >= cols:
-        return None
+    choice = input(f"{Fore.YELLOW}Select Option (1-2): ")
     
-    if cloneBoard[coordX][coordY] != ".":
-        return None
+    return choice
+
+
+def display_difficulty_menu(terminalWidth):
+    menuHeader = f"{Fore.YELLOW + Style.BRIGHT}💣 SELECT DIFFICULTY LEVEL 💣"
+    print(f"\n{menuHeader.center(terminalWidth)}\n")
+
+    menuItems = [
+        f"{Fore.CYAN}[1] Easy",
+        f"{Fore.CYAN}[2] Medium",
+        f"{Fore.CYAN}[3] Hard",
+        f"{Fore.CYAN}[4] Very Hard",
+        f"{Fore.CYAN}[5] Return to Main Menu\n"
+    ]
+
+    maxLength = 0
+
+    for item in menuItems:
+        if len(item) > maxLength:
+            maxLength = len(item)
+
+    paddingStr = " " * calculate_padding(terminalWidth, maxLength)
+
+    for item in menuItems:
+        print(f"{paddingStr}{item}")
+        time.sleep(0.1)
+
+    choice = input(f"{Fore.YELLOW}Select Difficulty (1-4): ")
+
+    return choice
+
+
+def display_main_menu(terminalWidth):
+    menuHeader = f"{Fore.BLUE + Style.BRIGHT}🎮 MAIN MENU 🎮"
+    print(f"\n{menuHeader.center(terminalWidth)}\n")
+
+    menuItems = [
+        f"{Fore.CYAN}[1] Play Game",
+        f"{Fore.CYAN}[2] Settings",
+        f"{Fore.CYAN}[3] Exit\n"
+    ]
+
+    maxLength = 0
+
+    for item in menuItems:
+        if len(item) > maxLength:
+            maxLength = len(item)
+
+    paddingStr = " " * calculate_padding(terminalWidth, maxLength)
+
+    for item in menuItems:
+        print(f"{paddingStr}{item}")
+        time.sleep(0.1)
+
+    choice = input(f"{Fore.YELLOW}Select Option (1-3): ")
     
-    value = board[coordX][coordY]
-    cloneBoard[coordX][coordY] = value
-
-    if value == 0:
-        for x in [-1, 0, 1]:
-            for y in [-1, 0, 1]:
-                if x != 0 or y != 0:
-                    reveal_cell(x + coordX, y + coordY, rows, cols)
+    return choice
 
 
-def print_board(rows, cols):
-    # Splices the necessary guide letters for rows and cols
-    guideRow = list(guide[:rows])
-    guideCols = list(guide[:cols])
-
-    # Prints the header guide
-    print("     " + "   ".join(guideCols))
-
-
-    # Prints the board
-    print("   +" + "---+" * cols)
-
-    for x in range(rows):
-        rowString = f"{guideRow[x]}  |"
-
-        for y in range(cols):
-            cell = cloneBoard[x][y]
-            cellDisplay = color_cell(cell)
-            rowString += f" {cellDisplay} |"
-
-        print(rowString)
-        print("   +" + "---+" * cols)
-
-    print(f"\n{Fore.YELLOW}Flags Remaining: {flagCount}/{totalFlags}{Style.RESET_ALL}\n")
+class Minesweeper:
+    def __init__(self, rows, cols, bombs):
+        self.rows = rows
+        self.cols = cols
+        self.bombsCount = bombs
+        self.flagCount = bombs
+        self.totalFlags = bombs
+        self.board = []
+        self.cloneBoard = []
+        self.debugMode = True
+        self.first_move_done = False
+        self.bestTime = None
+        self.boardWidth = 4 + (self.cols * 4)
+        self.terminalWidth = get_terminal_width()
+        self.generate_boards()
 
 
-def adjust_board(rows, cols):
-    # Adds numbers near mines
-    for i in range(rows):
-        for j in range(cols):
-            if board[i][j] == "*":
-                continue
+    def generate_boards(self, safe_coords=None):
+        self.board = []
+        self.cloneBoard = []
+        coordinates = []
 
-            bombs = 0
+        for x in range(self.rows):
+            row = []
+            cloneRow = []
+            
+            for y in range(self.cols):
+                row.append(0)
+                cloneRow.append(".")
+                coordinates.append((x, y))
+
+            self.board.append(row)
+            self.cloneBoard.append(cloneRow)
+
+        if safe_coords is not None:
+            safeCoordX = safe_coords[0]
+            safeCoordY = safe_coords[1]
+
+            safeCoordinates = []
 
             for x in [-1, 0, 1]:
                 for y in [-1, 0, 1]:
-                    coordX = i + x
-                    coordY = j + y
+                    coordX = safeCoordX + x
+                    coordY = safeCoordY + y
 
-                    if coordX >= 0 and coordX < rows and coordY >= 0 and coordY < cols:
-                        if board[coordX][coordY] == "*":
-                            bombs += 1
+                    if 0 <= coordX < self.rows and 0 <= coordY < self.cols:
+                        safeCoordinates.append((coordX, coordY))
+
+            filteredCoordinates = []
+            for coord in coordinates:
+                if coord not in safeCoordinates:
+                    filteredCoordinates.append(coord)
+
+            coordinates = filteredCoordinates
+
+            bombPlacement = random.sample(coordinates, self.bombsCount)
+
+            for x, y in bombPlacement:
+                self.board[x][y] = "*"
+
+        self.adjust_board()
+
+
+    def adjust_board(self):
+        for x in range(self.rows):
+            for y in range(self.cols):
+                if self.board[x][y] == "*":
+                    continue
+
+                bombs = 0
+
+                for xx in [-1, 0, 1]:
+                    for yy in [-1, 0, 1]:
+                        coordX = x + xx
+                        coordY = y + yy
                         
-            board[i][j] = bombs
+                        if 0 <= coordX < self.rows and 0 <= coordY < self.cols:
+                            if self.board[coordX][coordY] == "*":
+                                bombs += 1
 
-    print_board(rows, cols)
-
-
-
-def generate_board(rows, cols, bombsCount):
-    # Generates the main board (what players don't see)
-    for i in range(rows):
-        row = []
-
-        for j in range(cols):
-            row.append(0)
-
-        board.append(row)
-
-    # Generates the coordinates
-    coordinates = []
-
-    for i in range(rows):
-        for j in range(cols):
-            coordinates.append((i, j))
-
-    # Uses the generated coordinates to randomly place bombs
-    bombPlacement = random.sample(coordinates, bombsCount)
-
-    for x, y in bombPlacement:
-        board[x][y] = "*"
-
-    # Generates the clone board (what the players see)
-    for i in range(rows):
-        row = []
-
-        for j in range(cols):
-            row.append(".")
-
-        cloneBoard.append(row)
-
-    adjust_board(rows, cols)
+                self.board[x][y] = bombs
 
 
-def select_gamemode(choice):
-    global flagCount, totalFlags
-    if choice == 1:
-        rows = 9
-        cols = 9
-        bombsCount = 9
+    def get_guide(self, length):
+        return list("ABCDEFGHIJKLMNO"[:length])
+    
 
-    elif choice == 2:
-        rows = 9
-        cols = 9
-        bombsCount = 16
+    def color_cell(self, value):
+        colorMap = [Fore.BLUE, Fore.GREEN, Fore.RED, Fore.MAGENTA, Fore.YELLOW, Fore.MAGENTA, Fore.CYAN]
 
-    elif choice == 3:
-        rows = 9
-        cols = 15
-        bombsCount = 32
+        if value == "*":
+            return Fore.RED + Style.BRIGHT + "*" + Style.RESET_ALL
+        
+        elif value == "F":
+            return Fore.YELLOW + "F" + Style.RESET_ALL
+        
+        elif value == ".":
+            return Fore.WHITE + "."
+        
+        elif value == 0:
+            return " "
+        
+        else:
+            return colorMap[value - 1] + str(value) + Style.RESET_ALL
 
-    elif choice == 4:
-        rows = 15
-        cols = 15
-        bombsCount = 54
 
-    else:
-        print("Invalid Game Mode!")
+    def print_board(self, reveal=False):
+        guideRow = self.get_guide(self.rows)
+        guideCols = self.get_guide(self.cols)
+
+        paddingStr = " " * calculate_padding(self.terminalWidth, self.boardWidth)
+
+        print(paddingStr + "     " + "   ".join(guideCols))
+        print(paddingStr + "   ┌" + "───┬" * (self.cols - 1) + "───┐")
+
+        for x in range(self.rows):
+            print(f"{paddingStr}{guideRow[x]}  │", end=" ")
+
+            for y in range(self.cols):
+                if reveal:
+                    cell = self.board[x][y]
+
+                else:
+                    cell = self.cloneBoard[x][y]
+
+                cellDisplay = self.color_cell(cell)
+
+                print(f"{cellDisplay} │", end=" ")
+            
+            if x < self.rows - 1:
+                print("\n" + paddingStr + "   ├" + "───┼" * (self.cols - 1) + "───┤")
+
+        print("\n" + paddingStr + "   └" + "───┴" * (self.cols - 1) + "───┘")
+
+        print(f"\n{Fore.YELLOW}Flags Remaining: {self.flagCount}/{self.totalFlags}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}Legend: {Fore.RESET}. = Hidden, {Fore.YELLOW}F{Fore.RESET} = Flag, {Fore.RED}*{Fore.RESET} = Bomb, {Fore.MAGENTA}[1–8]{Fore.RESET} = Nearby Bombs\n")
+
+
+    def print_help(self):
+        display_help(self.terminalWidth)
+
+    def start_game(self):
+        startTime = time.time()
+        moves = 0
 
         while True:
-            print(modeMenu)
+            self.print_board()
 
-            try:
-                choice = int(input("Choice: "))
+            moves += 1         
+            result = self.player_move()
 
-            except ValueError:
-                print("Please enter only integer!")
+            elapsedTime = int(time.time() - startTime)
+            print(f"{Fore.LIGHTYELLOW_EX}Move #{moves} | Time Elapsed: {elapsedTime // 60}m {elapsedTime % 60}s\n")
+
+            if result == "HELP":
+                display_help(self.terminalWidth)
                 continue
 
-            select_gamemode(choice)
+            if result == "EXIT":
+                display_gave_up(self.terminalWidth)
+                break
 
-    flagCount = bombsCount
-    totalFlags = bombsCount
-    generate_board(rows, cols, bombsCount)
-    start_game(rows, cols)
+            if result in ["WIN", "LOSE"]:
+                self.print_board(reveal=True)
 
+                display_stats(elapsedTime, moves, self.terminalWidth)
 
-while True:
-    print(mainMenu)
+                if result == "WIN":
+                    if self.bestTime is None or elapsedTime < self.bestTime:
+                        self.bestTime = elapsedTime
+                        text = f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}🎊 NEW BEST TIME! 🎊"
+                        padding = " " * calculate_padding(self.terminalWidth, len(text))
+                        print(f"\n{padding}{text}\n")
 
-    try:
-        choice = int(input("Choice: "))
+                    display_win(self.terminalWidth)
 
-    except ValueError:
-        print("Please enter only integer!")
-        continue
+                else:
+                    display_lose(self.terminalWidth)
 
-    if choice == 1:
-        main_loop()
-        break
+                break
+   
+
+    def player_move(self):
+        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split()
+        print()
+
+        if len(move) == 1:
+            if self.debugMode and move[0] == "SHOW":
+                headerText = f"{Fore.MAGENTA + Style.BRIGHT}{Style.NORMAL} (FULL BOARD):"
+                padding = " " * calculate_padding(self.terminalWidth, len(headerText))
+                print(f"\n{padding}{headerText}\n")
+                self.print_board(reveal=True)
+                return "CONTINUE"
+        
+            elif move[0] == "HELP":
+                return "HELP"
+        
+        if len(move) == 1 and move[0] == "EXIT":
+            return "EXIT"
+        
+        if len(move) == 3 and move[0] in ["F", "U"]:
+            action, x, y = move
+            return self.handle_flags(action, x ,y)
+        
+        if len(move) == 2:
+            x, y = move
+            return self.reveal_cell(x, y)
+        
+        print(f"{Fore.RED}{Style.BRIGHT}INVALID{Style.NORMAL} Input\n")
+        return "CONTINUE"
+        
+
+    def handle_flags(self, action, x, y):
+        if x not in self.get_guide(self.rows) or y not in self.get_guide(self.cols):
+            print(f"{Fore.RED}{Style.BRIGHT}INVALID{Style.NORMAL} Coordinates!\n")
+            return "CONTINUE"
+        
+        coordX = self.get_guide(self.rows).index(x)
+        coordY = self.get_guide(self.cols).index(y)
+
+        if action == "F":
+            if self.cloneBoard[coordX][coordY] == "." and self.flagCount > 0:
+                self.cloneBoard[coordX][coordY] = "F"
+                self.flagCount -= 1
+
+            elif self.cloneBoard[coordX][coordY] == "F":
+                print(f"{Fore.RED}Cell is already {Style.BRIGHT}FLAGGED!\n")
+
+            else:
+                print(f"{Fore.RED + Style.BRIGHT}CANNOT{Style.NORMAL} Flag this Cell!\n")
+
+        elif action == "U":
+            if self.cloneBoard[coordX][coordY] == "F":
+                self.cloneBoard[coordX][coordY] = "."
+                self.flagCount += 1
+
+            else:
+                print(f"{Fore.RED}Cell is not {Style.BRIGHT}FLAGGED!\n")
+
+        return "CONTINUE"
     
-    elif choice == 2:
-        print("Exiting...")
-        break
 
-    else:
-        print("Invalid Choice! (1-2)")
+    def reveal_cell(self, x, y):
+        if x not in self.get_guide(self.rows) or y not in self.get_guide(self.cols):
+            print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} Coordinates!\n")
+            return "CONTINUE"
+        
+        coordX = self.get_guide(self.rows).index(x)
+        coordY = self.get_guide(self.cols).index(y)
+
+        if self.cloneBoard[coordX][coordY] == "F":
+            print(f"{Fore.RED}Cell is {Style.BRIGHT}FLAGGED!\n")
+            return "CONTINUE"
+        
+        if not self.first_move_done:
+            self.generate_boards(safe_coords=[coordX, coordY])
+            self.first_move_done = True
+        
+        if self.board[coordX][coordY] == "*":
+            self.cloneBoard[coordX][coordY] = "*"
+            return "LOSE"
+        
+        if self.cloneBoard[coordX][coordY] != ".":
+            print(f"{Fore.RED}Cell is {Style.BRIGHT}ALREADY REVEALED!\n")
+            return "CONTINUE"
+
+
+        self.reveal_neighbors(coordX, coordY)
+        
+        if self.check_win():
+            return "WIN"
+        
+        return "CONTINUE"
+        
+
+    def reveal_neighbors(self, coordX , coordY):
+        if not (0 <= coordX < self.rows and 0 <= coordY < self.cols):
+            return None
+        
+        if self.cloneBoard[coordX][coordY] != ".":
+            return None
+        
+        self.cloneBoard[coordX][coordY] = self.board[coordX][coordY]
+
+        if self.board[coordX][coordY] == 0:
+            for x in [-1, 0, 1]:
+                for y in [-1, 0, 1]:
+                    if x != 0 or y != 0:
+                        self.reveal_neighbors((coordX + x), (coordY + y))
+
+
+    def check_win(self):
+        for x in range(self.rows):
+            for y in range(self.cols):
+                if self.board[x][y] != "*" and self.cloneBoard[x][y] == ".":
+                    return False
+                
+        return True
+    
+
+def main_menu():
+    terminalWidth = get_terminal_width()
+    debugMode = False
+
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        display_welcome_text(terminalWidth)
+        choice = display_main_menu(terminalWidth)
+        
+        if choice == "1":
+            os.system('cls' if os.name == 'nt' else 'clear')
+            display_welcome_text(terminalWidth)
+                
+            difficulty = display_difficulty_menu(terminalWidth)
+                
+            levels = {
+                "1": (9, 9, 9),
+                "2": (9, 9, 16),
+                "3": (9, 15, 32),
+                "4": (15, 15, 54),
+                "5": None
+            }
+
+            if difficulty == "5":
+                continue
+
+            if difficulty not in levels:
+                print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+                time.sleep(0.5)
+                continue
+
+            rows, cols, bombs = levels[difficulty]
+            game = Minesweeper(rows, cols, bombs)
+            game.debugMode = debugMode
+            
+            os.system('cls' if os.name == 'nt' else 'clear')
+            game.start_game()
+            
+            input(f"\n{Fore.YELLOW}Press Any Key to return to main menu...{Style.RESET_ALL}")
+                
+        elif choice == "2":
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                display_welcome_text(terminalWidth)
+                settings_choice = display_settings_menu(terminalWidth, debugMode)
+                
+                if settings_choice == "1":
+                    debugMode = not debugMode
+                    status = "ON" if debugMode else "OFF"
+                    print(f"\n{Fore.GREEN}Debug mode is now {Fore.YELLOW + Style.BRIGHT}{status}{Style.RESET_ALL}")
+                    time.sleep(0.5)
+                    
+                elif settings_choice == "2":
+                    break
+                    
+                else:
+                    print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+                    time.sleep(0.5)
+                
+        elif choice == "3":
+            display_exit(terminalWidth)
+            break
+            
+        else:
+            print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+            time.sleep(0.5)
+
+    
+def main():
+    main_menu()
+
+if __name__ == "__main__":
+    main()
