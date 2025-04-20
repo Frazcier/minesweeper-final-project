@@ -75,11 +75,9 @@ def display_welcome_text(terminalWidth):
     
     for line in welcomeText:
         print(f"{Fore.MAGENTA + Style.BRIGHT}{line.center(terminalWidth)}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     print()
-
-    time.sleep(0.5)
 
 
 def display_win(terminalWidth):
@@ -94,7 +92,7 @@ def display_win(terminalWidth):
 
     for line in victoryText:
         print(f"{Fore.GREEN + Style.BRIGHT}{line.center(terminalWidth)}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     print()
 
@@ -111,7 +109,7 @@ def display_lose(terminalWidth):
 
     for line in loseText:
         print(f"{Fore.RED + Style.BRIGHT}{line.center(terminalWidth)}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     print()
 
@@ -128,7 +126,7 @@ def display_gave_up(terminalWidth):
 
     for line in gaveUpText:
         print(f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{line.center(terminalWidth)}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     print()
 
@@ -147,7 +145,7 @@ def display_exit(terminalWidth):
 
     for line in exitText:
         print(f"{Fore.MAGENTA + Style.BRIGHT}{line.center(terminalWidth)}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 
 def get_terminal_width():
@@ -182,7 +180,7 @@ def display_stats(elapsedTime, totalMoves, terminalWidth):
 
     for item in statsItems:
         print(f"{paddingStr}{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{item}")
-        time.sleep(0.1)
+        time.sleep(0.05)
     
 
 def display_help(terminalWidth):
@@ -209,22 +207,22 @@ def display_help(terminalWidth):
 
     for item in menuItems:
         print(f"{Fore.CYAN}{paddingStr}{item}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 
 def display_settings_menu(terminalWidth, debugMode):
     menuHeader = "⚙️ SETTINGS MENU ⚙️"
-    print(f"\n{Fore.GREEN + Style.BRIGHT}{menuHeader.center(terminalWidth)}")
+    print(f"\n{Fore.GREEN + Style.BRIGHT}{menuHeader.center(terminalWidth)}\n")
 
     if debugMode:
-        debugStatus = "ON"
+        debugStatus = Fore.YELLOW + Style.BRIGHT + "ON"
 
     else:
-        debugStatus = "OFF"
+        debugStatus = Fore.YELLOW + Style.BRIGHT + "OFF"
 
     menuItems = [
-        f"{Fore.CYAN}[1] Debug Mode: {Fore.YELLOW + Style.BRIGHT}{debugStatus}{Style.RESET_ALL}",
-        f"{Fore.CYAN}[2] Return to Main Menu\n"
+        f"[1] Debug Mode: {debugStatus}",
+        f"[2] Return to Main Menu\n"
     ]
 
     maxLength = 0
@@ -236,10 +234,10 @@ def display_settings_menu(terminalWidth, debugMode):
     paddingStr = " " * calculate_padding(terminalWidth, maxLength)
 
     for item in menuItems:
-        print(f"{paddingStr}{item}")
-        time.sleep(0.1)
+        print(f"{Fore.CYAN}{paddingStr}{item}")
+        time.sleep(0.05)
 
-    choice = input(f"{Fore.YELLOW}Select Option (1-2): ")
+    choice = input(f"{Fore.YELLOW}Select Option (1-2): ").strip()
     
     return choice
 
@@ -266,9 +264,9 @@ def display_difficulty_menu(terminalWidth):
 
     for item in menuItems:
         print(f"{Fore.CYAN}{paddingStr}{item}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
-    choice = input(f"{Fore.YELLOW}Select Difficulty (1-5): ")
+    choice = input(f"{Fore.YELLOW}Select Difficulty (1-5): ").strip()
 
     return choice
 
@@ -293,9 +291,9 @@ def display_main_menu(terminalWidth):
 
     for item in menuItems:
         print(f"{Fore.CYAN}{paddingStr}{item}")
-        time.sleep(0.1)
+        time.sleep(0.05)
 
-    choice = input(f"{Fore.YELLOW}Select Option (1-3): ")
+    choice = input(f"{Fore.YELLOW}Select Option (1-3): ").strip()
     
     return choice
 
@@ -499,7 +497,7 @@ class Minesweeper:
 
     # Handles player moves
     def player_move(self):
-        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split()
+        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split().strip()
         print()
 
         if len(move) == 1:
