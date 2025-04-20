@@ -10,7 +10,7 @@
 # (+) Adjusting UI elements
 # (+) Fixing minor issues
 # (+) Tweaking the code
-# Lines of code:675
+# Lines of code: 700+
 # 
 # Current Version: 1.4.04.19.25
 # (+) Slightly Improved Overall UI
