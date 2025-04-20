@@ -7,7 +7,7 @@
 # (+) Significantly Improved Overall UI
 # (+) Added Main Menu and Settings Menu
 # (+) Added Method to toggle Debug Mode
-# Lines of code:600+
+# Lines of code:675
 # 
 # Current Version: 1.4.04.19.25
 # (+) Slightly Improved Overall UI
@@ -127,7 +127,7 @@ def display_gave_up(terminalWidth):
     ] 
 
     for line in gaveUpText:
-        print(f"{Fore.YELLOW + Style.BRIGHT}{line.center(terminalWidth)}")
+        print(f"{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{line.center(terminalWidth)}")
         time.sleep(0.1)
 
     print()
@@ -246,7 +246,7 @@ def display_settings_menu(terminalWidth, debugMode):
 
 def display_difficulty_menu(terminalWidth):
     menuHeader = "💣 SELECT DIFFICULTY LEVEL 💣"
-    print(f"\n{Fore.YELLOW + Style.BRIGHT}{menuHeader.center(terminalWidth)}")
+    print(f"\n{Fore.RED + Style.BRIGHT}{menuHeader.center(terminalWidth)}")
 
     menuItems = [
         "[1] Easy",
@@ -388,22 +388,22 @@ class Minesweeper:
     
 
     def color_cell(self, value):
-        colorMap = [Fore.BLUE, Fore.GREEN, Fore.RED, Fore.MAGENTA, Fore.YELLOW, Fore.MAGENTA, Fore.CYAN]
+        colorMap = [Fore.BLUE, Fore.GREEN, Fore.RED, Fore.BLACK, Fore.YELLOW, Fore.MAGENTA, Fore.CYAN]
 
         if value == "*":
             return Fore.RED + Style.BRIGHT + "*" + Style.RESET_ALL
         
         elif value == "F":
-            return Fore.YELLOW + "F" + Style.RESET_ALL
+            return Fore.YELLOW + Style.BRIGHT + "F" + Style.RESET_ALL
         
         elif value == ".":
-            return Fore.WHITE + "."
+            return Fore.WHITE + Style.BRIGHT +"."
         
         elif value == 0:
             return " "
         
         else:
-            return colorMap[value - 1] + str(value) + Style.RESET_ALL
+            return colorMap[value - 1] + Style.BRIGHT + str(value) + Style.RESET_ALL
 
 
     def print_board(self, reveal=False):
@@ -656,7 +656,7 @@ def main_menu():
                     break
                     
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+                    print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL} choice")
                     time.sleep(0.5)
                 
         elif choice == "3":
@@ -664,7 +664,7 @@ def main_menu():
             break
             
         else:
-            print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.RESET_ALL} choice")
+            print(f"{Fore.RED + Style.BRIGHT}INVALID{Style.NORMAL}x choice")
             time.sleep(0.5)
 
     
