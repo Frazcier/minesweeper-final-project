@@ -497,7 +497,7 @@ class Minesweeper:
 
     # Handles player moves
     def player_move(self):
-        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split().strip()
+        move = input("Enter the coordinates (e.g., A A to reveal, F A A to flag, U A A to unflag): ").upper().split()
         print()
 
         if len(move) == 1:
