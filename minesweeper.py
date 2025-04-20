@@ -466,15 +466,19 @@ class Minesweeper:
             print(f"{Fore.LIGHTYELLOW_EX}Move #{moves} | Time Elapsed: {elapsedTime // 60}m {elapsedTime % 60}s\n")
 
             if result == "HELP":
+                os.system('cls' if os.name == 'nt' else 'clear')
                 display_help(self.terminalWidth)
                 continue
 
             if result == "EXIT":
                 time.sleep(0.5)
+                os.system('cls' if os.name == 'nt' else 'clear')
                 display_gave_up(self.terminalWidth)
                 break
 
             if result in ["WIN", "LOSE"]:
+                time.sleep(0.5)
+                os.system('cls' if os.name == 'nt' else 'clear')
                 self.print_board(reveal=True)
 
                 time.sleep(0.5)
@@ -502,9 +506,9 @@ class Minesweeper:
 
         if len(move) == 1:
             if self.debugMode and move[0] == "SHOW":
-                headerText = f"{Fore.MAGENTA + Style.BRIGHT}{Style.NORMAL} (FULL BOARD):"
-                padding = " " * calculate_padding(self.terminalWidth, len(headerText))
-                print(f"\n{padding}{headerText}\n")
+                os.system('cls' if os.name == 'nt' else 'clear')
+                headerText = "Debug View (FULL BOARD):"
+                print(f"\n{Fore.MAGENTA + Style.BRIGHT}{headerText.center(self.terminalWidth)}\n")
                 self.print_board(reveal=True)
                 return "CONTINUE"
         
@@ -674,6 +678,8 @@ def main_menu():
 
                         else:
                             print(f"{Fore.RED + Style.BRIGHT}INVALID {Style.NORMAL}Choice!")
+
+                break
 
                 
         elif choice == "2":
