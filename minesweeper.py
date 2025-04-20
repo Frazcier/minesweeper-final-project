@@ -7,6 +7,8 @@
 # (+) Significantly Improved Overall UI
 # (+) Added Main Menu and Settings Menu
 # (+) Added Method to toggle Debug Mode
+# (+) Fixing minor issues
+# (+) Tweaking the code
 # Lines of code:675
 # 
 # Current Version: 1.4.04.19.25
