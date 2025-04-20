@@ -639,8 +639,9 @@ def main_menu():
             
             os.system('cls' if os.name == 'nt' else 'clear')
             game.start_game()
-            
-            input(f"\n{Fore.YELLOW}Press Any Key to return to main menu...{Style.RESET_ALL}")
+
+            text = "Press Any Key to return to main menu..."
+            input(f"\n{Fore.YELLOW}{text.center(terminalWidth)}")
                 
         elif choice == "2":
             while True:
