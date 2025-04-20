@@ -53,6 +53,9 @@
 # (+) Adjusts Board after Generating
 # (?) Special Cases in Move Validation not fixed
 # Lines of code: 100+
+# 
+# Credits:
+# Icon: Minesweeper (Game) - Giant Bomb. (1990, October 8). Giant Bomb. https://www.giantbomb.com/minesweeper/3030-4032/
 
 import random
 import time
