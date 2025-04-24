@@ -165,7 +165,7 @@ def calculate_padding(x, y):
 
 def display_stats(elapsedTime, totalMoves, terminalWidth):
     statsHeader = "📈 YOUR TOTAL STATISTICS 📈"
-    print(f"\n{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{statsHeader.center(terminalWidth)}")
+    print(f"\n{Fore.LIGHTYELLOW_EX + Style.BRIGHT}{statsHeader.center(terminalWidth)}\n")
 
     statsItems = [
         f"Total Time: {elapsedTime // 60}m {elapsedTime % 60}s",
@@ -188,7 +188,7 @@ def display_stats(elapsedTime, totalMoves, terminalWidth):
 
 def display_help(terminalWidth):
     menuHeader = "📜 COMMANDS 📜"
-    print(f"\n{Fore.CYAN + Style.BRIGHT}{menuHeader.center(terminalWidth)}")
+    print(f"\n{Fore.CYAN + Style.BRIGHT}{menuHeader.center(terminalWidth)}\n")
 
     menuItems = [
         "A A         - Reveal Cell",
@@ -610,9 +610,9 @@ class Minesweeper:
         if self.cloneBoard[coordX][coordY] != ".":
             return None
         
+        # Implements flood fill using recursion
         self.cloneBoard[coordX][coordY] = self.board[coordX][coordY]
 
-        # Implements flood fill using recursion
         if self.board[coordX][coordY] == 0:
             for x in [-1, 0, 1]:
                 for y in [-1, 0, 1]:
